@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Detect Deepfakes with AI-Powered Accuracy</h1>
+        <p>Upload any video file to analyze and verify its authenticity using our advanced detection algorithms</p>
+        
+        <form action="{{ url_for('home') }}" method="POST" enctype="multipart/form-data">
+            <div class="upload-container" id="uploadContainer">
+                <div class="upload-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="upload-text">
+                    <h3 id="upload-title">Upload Video File</h3>
+                    <p id="upload-description">Supported formats: MP4, MOV, AVI, WebM</p>
+                    <div class="upload-btn">Choose File</div>
+                    <input type="file" id="fileInput" name="video" accept="video/*" required>
+                </div>
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <p><strong>Selected file:</strong> <span id="fileName">No file selected</span></p>
+                <p><strong>File size:</strong> <span id="fileSize">N/A</span></p>
+                <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Analyze Now</button>
+            </div>
+        </form>
+
+        <!-- 🆕 Add this block for Image Detection access -->
+        <div style="margin-top: 30px; text-align: center;">
+            <p style="color: var(--text-light); margin-bottom: 10px;">Want to analyze an image instead?</p>
+            <a href="{{ url_for('image_detect') }}" class="btn btn-outline">
+                <i class="fas fa-image"></i> Go to Image Detection
+            </a>
+        </div>
+        <!-- ✅ End of new section -->
+        
+        {% if result %}
+        <div class="result-container">
+            <h3 class="result-title">Analysis Result</h3>
+            <p><strong>Prediction:</strong> 
+                <span class="{% if result == 'Real' %}result-real{% else %}result-fake{% endif %}">
+                    {{ result }}
+                </span>
+            </p>
+            <p><strong>Confidence:</strong> {{ "%.2f"|format(confidence * 100) }}%</p>
+            {% if filename %}
+                <p><strong>Uploaded file:</strong> {{ filename }}</p>
+            {% endif %}
+
+            {% if pdf_path %}
+                <p>
+                    <a href="{{ url_for('download_report', path=pdf_path) }}" class="btn btn-primary" style="margin-top: 10px;">
+                        <i class="fas fa-file-pdf"></i> Download Report
+                    </a>
+                </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-title">
+            <h2>Advanced Detection Features</h2>
+            <p>Our platform utilizes cutting-edge technology to identify even the most sophisticated deepfakes</p>
+        </div>
+        
+        <div class="features-grid">
+    <!-- Row 1 -->
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-video"></i>
+        </div>
+        <h3>Video Analysis</h3>
+        <p>Detect manipulated video content with temporal consistency checks and facial movement analysis.</p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-image"></i>
+        </div>
+        <h3>Image Analysis</h3>
+        <p>Detect manipulated or deepfake images through AI-based analysis of visual patterns and features.</p>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-bolt"></i>
+        </div>
+        <h3>Real-Time Detection</h3>
+        <p>Upload images or videos to analyze and receive detection results with clear explanations.</p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h3>Detailed Reports</h3>
+        <p>Receive comprehensive analysis reports with confidence scores.</p>
+    </div>
+</div>
+
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works" id="how-it-works">
+    <div class="container">
+        <div class="section-title">
+            <h2>How It Works</h2>
+            <p>Our simple three-step process makes deepfake detection accessible to everyone</p>
+        </div>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Upload Media</h3>
+                    <p>Upload video, audio, or image files through our secure platform</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>AI Analysis</h3>
+                    <p>Our algorithms process your media using multiple detection methods</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Get Results</h3>
+                    <p>Receive a detailed report with authenticity score and evidence markers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not session.get('user') %}
+<section class="cta">
+    <div class="container">
+        <h2>Start Detecting Deepfakes Today</h2>
+        <p>Create an account to access advanced features and save your analysis history</p>
+        <a href="{{ url_for('register') }}" class="btn btn-light btn-large">Create Free Account</a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

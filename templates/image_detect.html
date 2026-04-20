@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Image Deepfake Detection | TruthNet{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='img_detect.css') }}">
+
+<section class="image-detect-section">
+    <div class="image-detect-container">
+        <h2 class="page-title">Image Deepfake Detection 🕵️‍♂️</h2>
+        <p class="subtext">
+            Upload an image to check if it's real or deepfake using our AI model.
+        </p>
+
+        <!-- Upload Section -->
+        <div class="upload-box">
+            <label for="upload" class="upload-label">Choose Image</label>
+            <input type="file" id="upload" accept="image/*" onchange="processImage(event)">
+            <p class="upload-note">Supported formats: JPG, PNG, JPEG</p>
+        </div>
+
+        <!-- Centered Preview and Result (Vertical Layout) -->
+        <div class="result-section-vertical">
+            <div class="preview-box">
+                <h4>Uploaded Image</h4>
+                <img id="image-preview" alt="Preview will appear here">
+            </div>
+
+            <div class="prediction-box">
+                <h4>Prediction Result</h4>
+                <p id="result">Awaiting image upload...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<script>
+    let model;
+
+    // Load model
+    async function loadModel() {
+        try {
+            model = await tf.loadLayersModel('/static/tfjs_model/model.json');
+            console.log("✅ Image model loaded successfully!");
+        } catch (error) {
+            console.error("❌ Error loading model:", error);
+            document.getElementById("result").innerText = "Error loading model.";
+        }
+    }
+    loadModel();
+
+    // Process image
+    async function processImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+
+        img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 224;
+            canvas.height = 224;
+            ctx.drawImage(img, 0, 0, 224, 224);
+
+            // Convert to tensor
+            const tensor = tf.browser.fromPixels(canvas)
+                .toFloat()
+                .div(tf.scalar(255))
+                .expandDims();
+
+            // Show preview
+            document.getElementById("image-preview").src = canvas.toDataURL();
+
+            // Predict
+            try {
+                const prediction = await model.predict(tensor).data();
+                const confidence = prediction[0];
+                const resultText = confidence > 0.5 
+                    ? `<span class="fake">🔴 Deepfake Detected</span>`
+    : `<span class="real">🟢 Real Image</span>`;
+                document.getElementById("result").innerHTML = resultText;
+            } catch (error) {
+                console.error("Prediction error:", error);
+                document.getElementById("result").innerText = "Prediction failed.";
+            }
+        };
+    }
+</script>
+{% endblock %}

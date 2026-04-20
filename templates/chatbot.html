@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Chatbot | TruthNet{% endblock %}
+
+{% block content %}
+<section class="chatbot-section">
+    <div class="chatbot-container">
+        <h2>Ask TruthNet AI Assistant 🤖</h2>
+        <p class="chatbot-subtext">Get instant answers to your questions about Deepfakes, detection techniques, and cybersecurity awareness.</p>
+        
+        <div id="chatWindow" class="chat-window"></div>
+
+        <form id="chatForm" class="chat-input-area">
+            <input type="text" id="chatMessage" placeholder="Type your question..." autocomplete="off" required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+    </div>
+</section>
+
+<script>
+const chatForm = document.getElementById('chatForm');
+const chatWindow = document.getElementById('chatWindow');
+const chatMessage = document.getElementById('chatMessage');
+
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = chatMessage.value.trim();
+    if (!message) return;
+
+    // Display user message
+    chatWindow.innerHTML += `<div class="message user"><b>You:</b> ${message}</div>`;
+    chatMessage.value = '';
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    // Send to backend
+    const res = await fetch('/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message })
+    });
+
+    const data = await res.json();
+    const botReply = data.response || "Error: No response.";
+    
+    // ✅ Render formatted response with HTML (bolds, bullets, line breaks)
+    chatWindow.innerHTML += `<div class="message bot"><b>TruthNet AI:</b> ${botReply}</div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+});
+</script>
+{% endblock %}
